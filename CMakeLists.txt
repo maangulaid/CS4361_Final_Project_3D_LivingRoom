@@ -1,26 +1,28 @@
 cmake_minimum_required(VERSION 3.20)
-project(CS4361_FinalProject LANGUAGES CXX)
+project(FinalRoom LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+# If you used vcpkg at C:\dev\vcpkg
+if (NOT DEFINED CMAKE_TOOLCHAIN_FILE)
+    set(CMAKE_TOOLCHAIN_FILE "C:/dev/vcpkg/scripts/buildsystems/vcpkg.cmake" CACHE STRING "")
+endif()
+set(VCPKG_TARGET_TRIPLET "x64-mingw-dynamic" CACHE STRING "")
 
 find_package(glfw3 CONFIG REQUIRED)
 find_package(glad CONFIG REQUIRED)
 find_package(glm CONFIG REQUIRED)
 
-file(GLOB_RECURSE SRC_FILES "src/*.cpp")
+add_executable(FinalRoom
+    src/main.cpp
+    src/shader.h
+)
 
-add_executable(FinalProject ${SRC_FILES})
-
-target_link_libraries(FinalProject
+target_link_libraries(FinalRoom
     PRIVATE
         glfw
         glad::glad
         glm::glm
         opengl32
 )
-
-# Fix MinGW needing WinMain
-if (MINGW)
-    target_link_options(FinalProject PRIVATE -Wl,-emainCRTStartup)
-endif()
