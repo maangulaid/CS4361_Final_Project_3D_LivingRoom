@@ -8,6 +8,9 @@
 #include <iostream>
 
 #include "shader.h"
+#include "Furniture.h"
+
+
 
 // -------- window size --------
 const unsigned int SCR_WIDTH  = 1280;
@@ -122,6 +125,11 @@ int main()
 
     glBindVertexArray(0);
 
+    // --------- Furniture context ----------
+    FurnitureContext furnitureCtx { cubeVAO, &roomShader };
+
+    
+
     // --------- Room dimensions ----------
     // room center at origin
     // width  = 10 (x: -5 to +5)
@@ -159,7 +167,7 @@ int main()
 
 
 
-    
+
 
     // --------- Colors (hex) ----------
     // You can change these hex values to anything you want (#RRGGBB)
@@ -259,6 +267,9 @@ int main()
             roomShader.setVec3("objectColor", sideWallColor);
             glDrawArrays(GL_TRIANGLES, 0, 36);
         }
+
+        // the table or the coffee table that i added
+        drawCoffeeTable(furnitureCtx);
 
         // swap buffers + poll
         glfwSwapBuffers(window);
