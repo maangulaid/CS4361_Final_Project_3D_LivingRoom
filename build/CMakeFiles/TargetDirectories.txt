@@ -1,0 +1,3 @@
+C:/Users/aogul/OneDrive - The University of Texas at Dallas/utd_/fall 2025/CS 4361.002 - Computer Graphics/final project/final project/build/CMakeFiles/FinalRoom.dir
+C:/Users/aogul/OneDrive - The University of Texas at Dallas/utd_/fall 2025/CS 4361.002 - Computer Graphics/final project/final project/build/CMakeFiles/edit_cache.dir
+C:/Users/aogul/OneDrive - The University of Texas at Dallas/utd_/fall 2025/CS 4361.002 - Computer Graphics/final project/final project/build/CMakeFiles/rebuild_cache.dir
