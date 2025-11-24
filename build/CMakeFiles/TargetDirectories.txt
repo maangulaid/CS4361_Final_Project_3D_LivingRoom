@@ -1,0 +1,3 @@
+/Users/sayu/Downloads/CS4361_Final_Project_3D_LivingRoom-main/build/CMakeFiles/FinalRoom.dir
+/Users/sayu/Downloads/CS4361_Final_Project_3D_LivingRoom-main/build/CMakeFiles/edit_cache.dir
+/Users/sayu/Downloads/CS4361_Final_Project_3D_LivingRoom-main/build/CMakeFiles/rebuild_cache.dir
