@@ -4,7 +4,7 @@
 # compile CXX with C:/msys64/ucrt64/bin/c++.exe
 CXX_DEFINES = -DGLFW_DLL
 
-CXX_INCLUDES = @CMakeFiles/FinalRoom.dir/includes_CXX.rsp
+CXX_INCLUDES = @CMakeFiles/FinalProject.dir/includes_CXX.rsp
 
 CXX_FLAGS = -std=gnu++17
 

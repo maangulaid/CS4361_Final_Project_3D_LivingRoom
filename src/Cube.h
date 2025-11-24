@@ -1,7 +1,6 @@
-#ifndef CUBE_H
-#define CUBE_H
-
+#pragma once
 #include <glad/glad.h>
+#include <glm/glm.hpp>
 
 class Cube {
 public:
@@ -9,8 +8,5 @@ public:
 
     Cube();
     ~Cube();
-
     void Draw();
 };
-
-#endif

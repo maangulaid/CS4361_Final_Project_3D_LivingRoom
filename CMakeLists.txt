@@ -1,31 +1,28 @@
 cmake_minimum_required(VERSION 3.20)
-project(FinalRoom LANGUAGES C CXX)
+project(FinalRoom LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# Include directories (your include/ folder with glad + KHR)
-include_directories(include)
+# If you used vcpkg at C:\dev\vcpkg
+if (NOT DEFINED CMAKE_TOOLCHAIN_FILE)
+    set(CMAKE_TOOLCHAIN_FILE "C:/dev/vcpkg/scripts/buildsystems/vcpkg.cmake" CACHE STRING "")
+endif()
+set(VCPKG_TARGET_TRIPLET "x64-mingw-dynamic" CACHE STRING "")
 
-# Source files
-set(SRC_FILES
+find_package(glfw3 CONFIG REQUIRED)
+find_package(glad CONFIG REQUIRED)
+find_package(glm CONFIG REQUIRED)
+
+add_executable(FinalRoom
     src/main.cpp
-    src/glad.c
-    src/Cube.cpp
+    src/shader.h
 )
 
-add_executable(FinalRoom ${SRC_FILES})
-
-# GLFW (installed via Homebrew)
-find_package(glfw3 REQUIRED)
-
-# GLM (header-only, no linking required)
-# You may include GLM manually later if needed
-
-# Link libraries for macOS
 target_link_libraries(FinalRoom
     PRIVATE
         glfw
-        "-framework OpenGL"
-        "-ldl"
+        glad::glad
+        glm::glm
+        opengl32
 )

@@ -1,1 +1,3 @@
-/usr/bin/c++  -arch arm64 -Wl,-search_paths_first -Wl,-headerpad_max_install_names CMakeFiles/FinalRoom.dir/src/main.cpp.o CMakeFiles/FinalRoom.dir/src/glad.c.o CMakeFiles/FinalRoom.dir/src/Cube.cpp.o -o FinalRoom  -Wl,-rpath,/opt/homebrew/lib /opt/homebrew/lib/libglfw.3.4.dylib -framework OpenGL -ldl
+"C:\Program Files\CMake\bin\cmake.exe" -E rm -f CMakeFiles\FinalRoom.dir/objects.a
+C:\msys64\ucrt64\bin\ar.exe qc CMakeFiles\FinalRoom.dir/objects.a @CMakeFiles\FinalRoom.dir\objects1.rsp
+C:\msys64\ucrt64\bin\c++.exe -Wl,--whole-archive CMakeFiles\FinalRoom.dir/objects.a -Wl,--no-whole-archive -o FinalRoom.exe -Wl,--out-implib,libFinalRoom.dll.a -Wl,--major-image-version,0,--minor-image-version,0 @CMakeFiles\FinalRoom.dir\linkLibs.rsp

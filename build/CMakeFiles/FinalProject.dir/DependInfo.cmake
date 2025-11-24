@@ -8,7 +8,8 @@ set(CMAKE_DEPENDS_LANGUAGES
 
 # The set of dependency files which are needed:
 set(CMAKE_DEPENDS_DEPENDENCY_FILES
-  "C:/Users/aogul/OneDrive - The University of Texas at Dallas/utd_/fall 2025/CS 4361.002 - Computer Graphics/final project/final project/src/main.cpp" "CMakeFiles/FinalRoom.dir/src/main.cpp.obj" "gcc" "CMakeFiles/FinalRoom.dir/src/main.cpp.obj.d"
+  "C:/Users/aogul/OneDrive - The University of Texas at Dallas/utd_/fall 2025/CS 4361.002 - Computer Graphics/final project/final project/src/Cube.cpp" "CMakeFiles/FinalProject.dir/src/Cube.cpp.obj" "gcc" "CMakeFiles/FinalProject.dir/src/Cube.cpp.obj.d"
+  "C:/Users/aogul/OneDrive - The University of Texas at Dallas/utd_/fall 2025/CS 4361.002 - Computer Graphics/final project/final project/src/main.cpp" "CMakeFiles/FinalProject.dir/src/main.cpp.obj" "gcc" "CMakeFiles/FinalProject.dir/src/main.cpp.obj.d"
   )
 
 # Targets to which this target links which contain Fortran sources.

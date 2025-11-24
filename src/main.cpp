@@ -11,7 +11,10 @@
 #include "Furniture.h"
 #include "Cube.h"
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> 3dda252494038bf3a2626425106d220f7ac88f89
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 
@@ -24,7 +27,11 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
     glViewport(0, 0, width, height);
 }
 
+<<<<<<< HEAD
 // helper for hex colors (used by your coffee table)
+=======
+// helper for hex color (table uses it)
+>>>>>>> 3dda252494038bf3a2626425106d220f7ac88f89
 glm::vec3 hexColor(unsigned int hex) {
     float r = ((hex >> 16) & 0xFF) / 255.0f;
     float g = ((hex >> 8)  & 0xFF) / 255.0f;
@@ -63,8 +70,12 @@ unsigned int LoadTexture(const char* path) {
     return tex;
 }
 
+<<<<<<< HEAD
 int main()
 {
+=======
+int main() {
+>>>>>>> 3dda252494038bf3a2626425106d220f7ac88f89
     // --------- GLFW init ----------
     glfwInit();
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
@@ -88,11 +99,16 @@ int main()
     }
 
     glEnable(GL_DEPTH_TEST);
+<<<<<<< HEAD
     glDisable(GL_CULL_FACE); // view inside walls
+=======
+    glDisable(GL_CULL_FACE); // allows inside walls
+>>>>>>> 3dda252494038bf3a2626425106d220f7ac88f89
 
     // --------- Shader ----------
     Shader roomShader("../shaders/textured.vert", "../shaders/textured.frag");
 
+<<<<<<< HEAD
     // --------- Cube VAO/VBO ----------
     Cube cube; // uses your Cube.cpp
 
@@ -108,10 +124,29 @@ int main()
     roomShader.setInt("material.diffuse", 0);
 
     // --------- Camera ----------
+=======
+    // --------- Cube ----------
+    Cube cube; // Has position + normals + UVs
+
+    // Furniture context
+    FurnitureContext furnitureCtx { cube.VAO, &roomShader };
+
+    // --------- Load Textures (ONLY WALLS + FLOOR) ----------
+    unsigned int wallTex  = LoadTexture("../textures/wall.jpg");
+    unsigned int floorTex = LoadTexture("../textures/wood.jpg");
+    unsigned int carpetTex = LoadTexture("../textures/carpet.jpg"); // optional if you have rug
+    unsigned int fabricTex = LoadTexture("../textures/fabric.jpg");
+
+    roomShader.use();
+    roomShader.setInt("material.diffuse", 0); // <-- REQUIRED (texture unit 0)
+
+    // --------- Camera (static) ----------
+>>>>>>> 3dda252494038bf3a2626425106d220f7ac88f89
     glm::vec3 cameraPos    = glm::vec3(0, 1.2f, 4);
     glm::vec3 cameraTarget = glm::vec3(0, 1, 0);
     glm::vec3 cameraUp     = glm::vec3(0, 1, 0);
 
+<<<<<<< HEAD
     // --------- Room layout ----------
     glm::vec3 floorPos   = glm::vec3(0, 0, 0);
     glm::vec3 floorScale = glm::vec3(10, 0.1f, 14);
@@ -123,6 +158,19 @@ int main()
     glm::vec3 backScale = glm::vec3(10, 4, 0.1f);
 
     glm::vec3 frontPos   = glm::vec3(0, 2,  7);
+=======
+    // --------- Room positions ----------
+    glm::vec3 floorPos   = glm::vec3(0, 0, 0);
+    glm::vec3 floorScale = glm::vec3(10, 0.1f, 14);
+
+    glm::vec3 ceilPos    = glm::vec3(0, 4, 0);
+    glm::vec3 ceilScale  = glm::vec3(10, 0.1f, 14);
+
+    glm::vec3 backPos    = glm::vec3(0, 2, -7);
+    glm::vec3 backScale  = glm::vec3(10, 4, 0.1f);
+
+    glm::vec3 frontPos   = glm::vec3(0, 2, 7);
+>>>>>>> 3dda252494038bf3a2626425106d220f7ac88f89
     glm::vec3 frontScale = glm::vec3(10, 4, 0.1f);
 
     glm::vec3 leftPos    = glm::vec3(-5, 2, 0);
@@ -134,17 +182,27 @@ int main()
     // --------- Render Loop ----------
     while (!glfwWindowShouldClose(window))
     {
+<<<<<<< HEAD
         // user input
         if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
             glfwSetWindowShouldClose(window, true);
 
         // clear
+=======
+        if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+            glfwSetWindowShouldClose(window, true);
+
+>>>>>>> 3dda252494038bf3a2626425106d220f7ac88f89
         glClearColor(0.1f, 0.1f, 0.15f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         roomShader.use();
 
+<<<<<<< HEAD
         // view & projection
+=======
+        // camera matrices
+>>>>>>> 3dda252494038bf3a2626425106d220f7ac88f89
         glm::mat4 view = glm::lookAt(cameraPos, cameraTarget, cameraUp);
         glm::mat4 projection =
             glm::perspective(glm::radians(45.0f),
@@ -154,7 +212,11 @@ int main()
         roomShader.setMat4("view", view);
         roomShader.setMat4("projection", projection);
 
+<<<<<<< HEAD
         // lighting
+=======
+        // STATIC LIGHT
+>>>>>>> 3dda252494038bf3a2626425106d220f7ac88f89
         roomShader.setVec3("viewPos", cameraPos);
         roomShader.setVec3("dirLight.direction", glm::vec3(-0.2f, -1.0f, -0.3f));
         roomShader.setVec3("dirLight.ambient",  glm::vec3(0.3f));
@@ -164,8 +226,13 @@ int main()
         roomShader.setVec3("material.specular", glm::vec3(0.5f));
         roomShader.setFloat("material.shininess", 32.0f);
 
+<<<<<<< HEAD
         // helper for drawing cubes
         auto DrawCube = [&](glm::vec3 pos, glm::vec3 scale, unsigned int texture)
+=======
+        // helper for drawing textured cubes
+        auto DrawCube = [&](glm::vec3 pos, glm::vec3 scale, unsigned int tex)
+>>>>>>> 3dda252494038bf3a2626425106d220f7ac88f89
         {
             glm::mat4 model = glm::mat4(1.0f);
             model = glm::translate(model, pos);
@@ -174,11 +241,16 @@ int main()
             roomShader.setMat4("model", model);
 
             glActiveTexture(GL_TEXTURE0);
+<<<<<<< HEAD
             glBindTexture(GL_TEXTURE_2D, texture);
+=======
+            glBindTexture(GL_TEXTURE_2D, tex);
+>>>>>>> 3dda252494038bf3a2626425106d220f7ac88f89
 
             cube.Draw();
         };
 
+<<<<<<< HEAD
         // FLOOR (textured)
         DrawCube(floorPos, floorScale, floorTex);
 
@@ -195,6 +267,19 @@ int main()
         drawCoffeeTable(furnitureCtx);
 
         // swap + poll
+=======
+        // ---- Draw room ----
+        DrawCube(floorPos, floorScale, floorTex);   // floor (wood)
+        DrawCube(ceilPos, ceilScale, wallTex);      // ceiling (same as wall)
+        DrawCube(backPos, backScale, wallTex);      // back wall
+        DrawCube(frontPos, frontScale, wallTex);    // front wall
+        DrawCube(leftPos, leftScale, wallTex);      // left wall
+        DrawCube(rightPos, rightScale, wallTex);    // right wall
+
+        // ---- Furniture (still solid colors) ----
+        drawCoffeeTable(furnitureCtx);
+
+>>>>>>> 3dda252494038bf3a2626425106d220f7ac88f89
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
