@@ -9,8 +9,10 @@
 
 #include "shader.h"
 #include "Furniture.h"
+#include "Cube.h"
 
-
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
 
 // -------- window size --------
 const unsigned int SCR_WIDTH  = 1280;
@@ -21,7 +23,7 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
     glViewport(0, 0, width, height);
 }
 
-// simple helper: 0xRRGGBB -> glm::vec3
+// helper for hex color (table uses it)
 glm::vec3 hexColor(unsigned int hex) {
     float r = ((hex >> 16) & 0xFF) / 255.0f;
     float g = ((hex >> 8)  & 0xFF) / 255.0f;
@@ -29,66 +31,46 @@ glm::vec3 hexColor(unsigned int hex) {
     return glm::vec3(r, g, b);
 }
 
-// simple cube vertices (positions only), centered at origin, size 1
-float cubeVertices[] = {
-    // back face
-    -0.5f, -0.5f, -0.5f,
-     0.5f, -0.5f, -0.5f,
-     0.5f,  0.5f, -0.5f,
-     0.5f,  0.5f, -0.5f,
-    -0.5f,  0.5f, -0.5f,
-    -0.5f, -0.5f, -0.5f,
+// Texture Loader
+unsigned int LoadTexture(const char* path) {
+    unsigned int tex;
+    glGenTextures(1, &tex);
 
-    // front face
-    -0.5f, -0.5f,  0.5f,
-     0.5f, -0.5f,  0.5f,
-     0.5f,  0.5f,  0.5f,
-     0.5f,  0.5f,  0.5f,
-    -0.5f,  0.5f,  0.5f,
-    -0.5f, -0.5f,  0.5f,
+    int w, h, channels;
+    stbi_set_flip_vertically_on_load(true);
+    unsigned char* data = stbi_load(path, &w, &h, &channels, 0);
 
-    // left face
-    -0.5f,  0.5f,  0.5f,
-    -0.5f,  0.5f, -0.5f,
-    -0.5f, -0.5f, -0.5f,
-    -0.5f, -0.5f, -0.5f,
-    -0.5f, -0.5f,  0.5f,
-    -0.5f,  0.5f,  0.5f,
+    if (!data) {
+        std::cout << "Failed to load texture: " << path << std::endl;
+        return 0;
+    }
 
-    // right face
-     0.5f,  0.5f,  0.5f,
-     0.5f,  0.5f, -0.5f,
-     0.5f, -0.5f, -0.5f,
-     0.5f, -0.5f, -0.5f,
-     0.5f, -0.5f,  0.5f,
-     0.5f,  0.5f,  0.5f,
+    GLenum format = (channels == 4 ? GL_RGBA : GL_RGB);
 
-    // bottom face
-    -0.5f, -0.5f, -0.5f,
-     0.5f, -0.5f, -0.5f,
-     0.5f, -0.5f,  0.5f,
-     0.5f, -0.5f,  0.5f,
-    -0.5f, -0.5f,  0.5f,
-    -0.5f, -0.5f, -0.5f,
+    glBindTexture(GL_TEXTURE_2D, tex);
+    glTexImage2D(GL_TEXTURE_2D, 0, format, w, h, 0, format,
+                 GL_UNSIGNED_BYTE, data);
+    glGenerateMipmap(GL_TEXTURE_2D);
 
-    // top face
-    -0.5f,  0.5f, -0.5f,
-     0.5f,  0.5f, -0.5f,
-     0.5f,  0.5f,  0.5f,
-     0.5f,  0.5f,  0.5f,
-    -0.5f,  0.5f,  0.5f,
-    -0.5f,  0.5f, -0.5f,
-};
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,
+                    GL_LINEAR_MIPMAP_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-int main()
-{
+    stbi_image_free(data);
+    return tex;
+}
+
+int main() {
     // --------- GLFW init ----------
     glfwInit();
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-    GLFWwindow* window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "Final Project - Room", nullptr, nullptr);
+    GLFWwindow* window =
+        glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "Final Project - Room", nullptr, nullptr);
     if (!window) {
         std::cerr << "Failed to create GLFW window\n";
         glfwTerminate();
@@ -104,181 +86,110 @@ int main()
     }
 
     glEnable(GL_DEPTH_TEST);
-    glDisable(GL_CULL_FACE);   // see inside faces
+    glDisable(GL_CULL_FACE); // allows inside walls
 
     // --------- Shader ----------
-    Shader roomShader("../shaders/room.vert", "../shaders/room.frag");
+    Shader roomShader("../shaders/textured.vert", "../shaders/textured.frag");
 
-    // --------- Cube VAO/VBO ----------
-    unsigned int cubeVAO, cubeVBO;
-    glGenVertexArrays(1, &cubeVAO);
-    glGenBuffers(1, &cubeVBO);
+    // --------- Cube ----------
+    Cube cube; // Has position + normals + UVs
 
-    glBindVertexArray(cubeVAO);
+    // Furniture context
+    FurnitureContext furnitureCtx { cube.VAO, &roomShader };
 
-    glBindBuffer(GL_ARRAY_BUFFER, cubeVBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(cubeVertices), cubeVertices, GL_STATIC_DRAW);
+    // --------- Load Textures (ONLY WALLS + FLOOR) ----------
+    unsigned int wallTex  = LoadTexture("../textures/wall.jpg");
+    unsigned int floorTex = LoadTexture("../textures/wood.jpg");
+    unsigned int carpetTex = LoadTexture("../textures/carpet.jpg"); // optional if you have rug
+    unsigned int fabricTex = LoadTexture("../textures/fabric.jpg");
 
-    // position attribute
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-    glEnableVertexAttribArray(0);
+    roomShader.use();
+    roomShader.setInt("material.diffuse", 0); // <-- REQUIRED (texture unit 0)
 
-    glBindVertexArray(0);
+    // --------- Camera (static) ----------
+    glm::vec3 cameraPos    = glm::vec3(0, 1.2f, 4);
+    glm::vec3 cameraTarget = glm::vec3(0, 1, 0);
+    glm::vec3 cameraUp     = glm::vec3(0, 1, 0);
 
-    // --------- Furniture context ----------
-    FurnitureContext furnitureCtx { cubeVAO, &roomShader };
+    // --------- Room positions ----------
+    glm::vec3 floorPos   = glm::vec3(0, 0, 0);
+    glm::vec3 floorScale = glm::vec3(10, 0.1f, 14);
 
-    
+    glm::vec3 ceilPos    = glm::vec3(0, 4, 0);
+    glm::vec3 ceilScale  = glm::vec3(10, 0.1f, 14);
 
-    // --------- Room dimensions ----------
-    // room center at origin
-    // width  = 10 (x: -5 to +5)
-    // length = 14 (z: -7 to +7)
-    // height = 4  (y:  0 to +4 for walls)
+    glm::vec3 backPos    = glm::vec3(0, 2, -7);
+    glm::vec3 backScale  = glm::vec3(10, 4, 0.1f);
 
-    // camera inside room at (0, 1, 3)
-    glm::vec3 cameraPos    = glm::vec3(0.0f, 1.0f, 3.0f);
-    glm::vec3 cameraTarget = glm::vec3(0.0f, 1.0f, 0.0f);
-    glm::vec3 cameraUp     = glm::vec3(0.0f, 1.0f, 0.0f);
+    glm::vec3 frontPos   = glm::vec3(0, 2, 7);
+    glm::vec3 frontScale = glm::vec3(10, 4, 0.1f);
 
-    // floor at y = 0
-    glm::vec3 floorPos   = glm::vec3(0.0f, 0.0f, 0.0f);
-    glm::vec3 floorScale = glm::vec3(10.0f, 0.1f, 14.0f);
+    glm::vec3 leftPos    = glm::vec3(-5, 2, 0);
+    glm::vec3 leftScale  = glm::vec3(0.1f, 4, 14);
 
-    // ceiling at y = 4
-    glm::vec3 ceilPos    = glm::vec3(0.0f, 4.0f, 0.0f);
-    glm::vec3 ceilScale  = glm::vec3(10.0f, 0.1f, 14.0f);
+    glm::vec3 rightPos   = glm::vec3(5, 2, 0);
+    glm::vec3 rightScale = glm::vec3(0.1f, 4, 14);
 
-    // BACK WALL (-Z)
-    glm::vec3 backPos    = glm::vec3(0.0f, 2.0f, -7.0f);
-    glm::vec3 backScale  = glm::vec3(10.0f, 4.0f, 0.1f);
-
-    // FRONT WALL (+Z)
-    glm::vec3 frontPos   = glm::vec3(0.0f, 2.0f,  7.0f);
-    glm::vec3 frontScale = glm::vec3(10.0f, 4.0f, 0.1f);
-
-    // LEFT WALL (-X)
-    glm::vec3 leftPos    = glm::vec3(-5.0f, 2.0f, 0.0f);
-    glm::vec3 leftScale  = glm::vec3(0.1f, 4.0f, 14.0f);
-
-    // RIGHT WALL (+X)
-    glm::vec3 rightPos   = glm::vec3( 5.0f, 2.0f, 0.0f);
-    glm::vec3 rightScale = glm::vec3(0.1f, 4.0f, 14.0f);
-
-
-
-
-
-    // --------- Colors (hex) ----------
-    // You can change these hex values to anything you want (#RRGGBB)
-
-    // if any of yall want to change the color scheme, here are the hex codes:
-    glm::vec3 floorColor   = hexColor(0xFF0000); 
-    glm::vec3 ceilColor    = hexColor(0xE0E0E0); 
-    glm::vec3 backColor    = hexColor(0x9999FF); 
-    glm::vec3 frontColor   = hexColor(0x9999FF);
-    glm::vec3 sideWallColor= hexColor(0xADD8E6); 
-
-
-
-
-    // --------- render loop ----------
+    // --------- Render Loop ----------
     while (!glfwWindowShouldClose(window))
     {
-        // input (press ESC to close)
         if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
             glfwSetWindowShouldClose(window, true);
 
-        // clear
         glClearColor(0.1f, 0.1f, 0.15f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         roomShader.use();
 
-        // view & projection
+        // camera matrices
         glm::mat4 view = glm::lookAt(cameraPos, cameraTarget, cameraUp);
-        glm::mat4 projection = glm::perspective(
-            glm::radians(45.0f),
-            (float)SCR_WIDTH / (float)SCR_HEIGHT,
-            0.1f, 100.0f
-        );
+        glm::mat4 projection =
+            glm::perspective(glm::radians(45.0f),
+                             (float)SCR_WIDTH / SCR_HEIGHT,
+                             0.1f, 100.0f);
 
         roomShader.setMat4("view", view);
         roomShader.setMat4("projection", projection);
 
-        glBindVertexArray(cubeVAO);
+        // STATIC LIGHT
+        roomShader.setVec3("viewPos", cameraPos);
+        roomShader.setVec3("dirLight.direction", glm::vec3(-0.2f, -1.0f, -0.3f));
+        roomShader.setVec3("dirLight.ambient",  glm::vec3(0.3f));
+        roomShader.setVec3("dirLight.diffuse",  glm::vec3(0.8f));
+        roomShader.setVec3("dirLight.specular", glm::vec3(1.0f));
 
-        // --- floor ---
+        roomShader.setVec3("material.specular", glm::vec3(0.5f));
+        roomShader.setFloat("material.shininess", 32.0f);
+
+        // helper for drawing textured cubes
+        auto DrawCube = [&](glm::vec3 pos, glm::vec3 scale, unsigned int tex)
         {
             glm::mat4 model = glm::mat4(1.0f);
-            model = glm::translate(model, floorPos);
-            model = glm::scale(model, floorScale);
-            roomShader.setMat4("model", model);
-            roomShader.setVec3("objectColor", floorColor);
-            glDrawArrays(GL_TRIANGLES, 0, 36);
-        }
+            model = glm::translate(model, pos);
+            model = glm::scale(model, scale);
 
-        // --- ceiling ---
-        {
-            glm::mat4 model = glm::mat4(1.0f);
-            model = glm::translate(model, ceilPos);
-            model = glm::scale(model, ceilScale);
             roomShader.setMat4("model", model);
-            roomShader.setVec3("objectColor", ceilColor);
-            glDrawArrays(GL_TRIANGLES, 0, 36);
-        }
 
-        // --- back wall (-Z) ---
-        {
-            glm::mat4 model = glm::mat4(1.0f);
-            model = glm::translate(model, backPos);
-            model = glm::scale(model, backScale);
-            roomShader.setMat4("model", model);
-            roomShader.setVec3("objectColor", backColor);
-            glDrawArrays(GL_TRIANGLES, 0, 36);
-        }
+            glActiveTexture(GL_TEXTURE0);
+            glBindTexture(GL_TEXTURE_2D, tex);
 
-        // --- front wall (+Z) ---
-        {
-            glm::mat4 model = glm::mat4(1.0f);
-            model = glm::translate(model, frontPos);
-            model = glm::scale(model, frontScale);
-            roomShader.setMat4("model", model);
-            roomShader.setVec3("objectColor", frontColor);
-            glDrawArrays(GL_TRIANGLES, 0, 36);
-        }
+            cube.Draw();
+        };
 
-        // --- left wall (-X) ---
-        {
-            glm::mat4 model = glm::mat4(1.0f);
-            model = glm::translate(model, leftPos);
-            model = glm::scale(model, leftScale);
-            roomShader.setMat4("model", model);
-            roomShader.setVec3("objectColor", sideWallColor);
-            glDrawArrays(GL_TRIANGLES, 0, 36);
-        }
+        // ---- Draw room ----
+        DrawCube(floorPos, floorScale, floorTex);   // floor (wood)
+        DrawCube(ceilPos, ceilScale, wallTex);      // ceiling (same as wall)
+        DrawCube(backPos, backScale, wallTex);      // back wall
+        DrawCube(frontPos, frontScale, wallTex);    // front wall
+        DrawCube(leftPos, leftScale, wallTex);      // left wall
+        DrawCube(rightPos, rightScale, wallTex);    // right wall
 
-        // --- right wall (+X) ---
-        {
-            glm::mat4 model = glm::mat4(1.0f);
-            model = glm::translate(model, rightPos);
-            model = glm::scale(model, rightScale);
-            roomShader.setMat4("model", model);
-            roomShader.setVec3("objectColor", sideWallColor);
-            glDrawArrays(GL_TRIANGLES, 0, 36);
-        }
-
-        // the table or the coffee table that i added
+        // ---- Furniture (still solid colors) ----
         drawCoffeeTable(furnitureCtx);
 
-        // swap buffers + poll
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
-
-    // clean up
-    glDeleteVertexArrays(1, &cubeVAO);
-    glDeleteBuffers(1, &cubeVBO);
 
     glfwTerminate();
     return 0;
