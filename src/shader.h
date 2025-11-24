@@ -15,11 +15,8 @@ public:
     unsigned int ID;
 
     Shader(const char* vertexPath, const char* fragmentPath) {
-        // 1. load shader source from file
-        std::string vCode;
-        std::string fCode;
-        std::ifstream vFile;
-        std::ifstream fFile;
+        std::string vCode, fCode;
+        std::ifstream vFile, fFile;
 
         vFile.exceptions(std::ifstream::failbit | std::ifstream::badbit);
         fFile.exceptions(std::ifstream::failbit | std::ifstream::badbit);
@@ -34,25 +31,23 @@ public:
             fFile.close();
             vCode = vStream.str();
             fCode = fStream.str();
-        } catch (std::ifstream::failure& e) {
-            std::cerr << "ERROR::SHADER::FILE_NOT_SUCCESSFULLY_READ\n";
+        } catch (...) {
+            std::cout << "ERROR::SHADER::FILE_NOT_READ\n";
         }
 
         const char* vShaderCode = vCode.c_str();
         const char* fShaderCode = fCode.c_str();
 
-        // 2. compile shaders
         unsigned int vertex = glCreateShader(GL_VERTEX_SHADER);
-        glShaderSource(vertex, 1, &vShaderCode, nullptr);
+        glShaderSource(vertex, 1, &vShaderCode, NULL);
         glCompileShader(vertex);
         checkCompileErrors(vertex, "VERTEX");
 
         unsigned int fragment = glCreateShader(GL_FRAGMENT_SHADER);
-        glShaderSource(fragment, 1, &fShaderCode, nullptr);
+        glShaderSource(fragment, 1, &fShaderCode, NULL);
         glCompileShader(fragment);
         checkCompileErrors(fragment, "FRAGMENT");
 
-        // 3. link program
         ID = glCreateProgram();
         glAttachShader(ID, vertex);
         glAttachShader(ID, fragment);
@@ -67,33 +62,46 @@ public:
         glUseProgram(ID);
     }
 
-    void setMat4(const std::string& name, const glm::mat4& mat) const {
+    void setBool(const std::string &name, bool value) const {
+        glUniform1i(glGetUniformLocation(ID, name.c_str()), (int)value);
+    }
+
+    void setInt(const std::string &name, int value) const {
+        glUniform1i(glGetUniformLocation(ID, name.c_str()), value);
+    }
+
+    void setFloat(const std::string &name, float value) const {
+        glUniform1f(glGetUniformLocation(ID, name.c_str()), value);
+    }
+
+    void setVec3(const std::string &name, const glm::vec3 &v) const {
+        glUniform3fv(glGetUniformLocation(ID, name.c_str()), 1, glm::value_ptr(v));
+    }
+
+    void setVec3(const std::string &name, float x, float y, float z) const {
+        glUniform3f(glGetUniformLocation(ID, name.c_str()), x, y, z);
+    }
+
+    void setMat4(const std::string &name, const glm::mat4 &mat) const {
         glUniformMatrix4fv(glGetUniformLocation(ID, name.c_str()),
                            1, GL_FALSE, glm::value_ptr(mat));
     }
 
-    void setVec3(const std::string& name, const glm::vec3& v) const {
-        glUniform3fv(glGetUniformLocation(ID, name.c_str()),
-                     1, glm::value_ptr(v));
-    }
-
 private:
-    static void checkCompileErrors(unsigned int shader, const std::string& type) {
+    void checkCompileErrors(unsigned int shader, std::string type) const {
         int success;
         char infoLog[1024];
         if (type != "PROGRAM") {
             glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
             if (!success) {
-                glGetShaderInfoLog(shader, 1024, nullptr, infoLog);
-                std::cerr << "ERROR::SHADER_COMPILATION_ERROR of type: "
-                          << type << "\n" << infoLog << "\n";
+                glGetShaderInfoLog(shader, 1024, NULL, infoLog);
+                std::cout << "ERROR::SHADER_COMPILATION_ERROR\n" << infoLog << "\n";
             }
         } else {
             glGetProgramiv(shader, GL_LINK_STATUS, &success);
             if (!success) {
-                glGetProgramInfoLog(shader, 1024, nullptr, infoLog);
-                std::cerr << "ERROR::PROGRAM_LINKING_ERROR of type: "
-                          << type << "\n" << infoLog << "\n";
+                glGetProgramInfoLog(shader, 1024, NULL, infoLog);
+                std::cout << "ERROR::PROGRAM_LINKING_ERROR\n" << infoLog << "\n";
             }
         }
     }
