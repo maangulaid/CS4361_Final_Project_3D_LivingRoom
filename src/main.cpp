@@ -9,6 +9,8 @@
 #include "shader.h"
 #include "Furniture.h"   // your drawCoffeeTable / drawTVStand / drawSofa using objectColor
 
+#include <algorithm> 
+
 // ------------ window ------------
 const unsigned int SCR_WIDTH = 1280;
 const unsigned int SCR_HEIGHT = 720;
