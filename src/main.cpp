@@ -68,6 +68,18 @@ void processInput(GLFWwindow* window, float dt) {
     if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS) camPos.y += v;
 
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) glfwSetWindowShouldClose(window, true);
+
+    // clamp position to room bounds
+        // --- keep camera inside the room box ---
+    const float minX = -4.5f;
+    const float maxX =  4.5f;
+    const float minZ = -6.5f;
+    const float maxZ =  6.5f;
+    const float minY =  0.2f;  // a bit above floor
+    const float maxY =  3.5f;  // a bit below ceiling
+
+    camPos.x = std::clamp(camPos.x, minX, maxX);
+    camPos.z = std::clamp(camPos.z, minZ, maxZ);
 }
 
 // 0xRRGGBB -> glm::vec3
